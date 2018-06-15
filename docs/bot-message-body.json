@@ -1,0 +1,22 @@
+{
+  "token": "3QyPpQT0YqmFe1BBfNvutDKt",
+  "team_id": "TB437UUTE",
+  "api_app_id": "AB92CPNBG",
+  "event": {
+    "text": "<@UB56MGBEJ> uploaded a file: <https://lichi-workspace.slack.com/files/UB56MGBEJ/FB85XK2Q2/kp.png|kp.png> and commented: kp comment",
+    "username": "recognition-bot",
+    "bot_id": "BB96ZPR63",
+    "type": "message",
+    "subtype": "bot_message",
+    "ts": "1529052975.000129",
+    "channel": "CB92JVAB0",
+    "event_ts": "1529052975.000129",
+    "channel_type": "channel"
+  },
+  "type": "event_callback",
+  "event_id": "EvB7KBP1R7",
+  "event_time": 1529052975,
+  "authed_users": [
+    "UB7JZ1XQ9"
+  ]
+}
