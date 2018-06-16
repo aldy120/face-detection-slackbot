@@ -30,10 +30,10 @@ module.exports.event = (event, context, callback) => {
   }
 
   //process channel message
-  const text = body.event.text
+  let text = body.event.text
   const conversationId = body.event.channel
 
-  console.log(body)
+  // console.log(body)
 
   // if the file upload
   if (isFileUpload(body)) {
@@ -41,6 +41,7 @@ module.exports.event = (event, context, callback) => {
     console.log({imageUrl})
     console.log('Start download image')
     downloadImage(imageUrl)
+      .then(buffer => console.log({isBuffer: buffer.constructor === Buffer}))
   }
   
 
@@ -71,18 +72,20 @@ function isFileUpload(body) {
 }
 
 function downloadImage(url) {
-  request.get(url, {
-    encoding: null,
-    auth: {
-      bearer: token
-    }
-  }, (err, httpResponse, body) => {
-    if (err) {
-      console.log(err)
-      return
-    }
-
-    // this body is image buffer
-    console.log({isBuffer: body.constructor === Buffer})
+  return new Promise((resolve) => {
+    request.get(url, {
+      encoding: null,
+      auth: {
+        bearer: token
+      }
+    }, (err, httpResponse, body) => {
+      if (err) {
+        console.log(err)
+        return
+      }
+  
+      // this body is image (buffer)
+      resolve(body)
+    })
   })
 }
