@@ -9,11 +9,15 @@ function isBot(body) {
   return !!body.event.bot_id
 }
 
+function isChallenge(body) {
+  return body && body.type === 'url_verification'
+}
+
 module.exports.event = (event, context, callback) => {
   const body = event.body && JSON.parse(event.body)
 
   // verfied event api challnege token
-  if (body && body.type === 'url_verification') {
+  if (isChallenge(body)) {
     const response = {
       statusCode: 200,
       body: JSON.stringify({
