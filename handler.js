@@ -43,6 +43,8 @@ module.exports.event = (event, context, callback) => {
 
   // if the file upload
   // todo: file upload does not equal image
+  sendToChannel(conversationId, '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。')
+  console.log(body)
   if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
     console.log({imageUrl})
@@ -50,11 +52,10 @@ module.exports.event = (event, context, callback) => {
       .then(recognition)
       .then(data => sendToChannel(conversationId, JSON.stringify(data, null, 2)))
       .catch(err => console.log(err))
-    return
   }
   
   // send message
-  sendToChannel(conversationId, text)
+  // sendToChannel(conversationId, text)
 
   callback(null, {
     statusCode: 200
@@ -62,14 +63,12 @@ module.exports.event = (event, context, callback) => {
 }
 
 function sendToChannel(conversationId, text) {
-  console.log({conversationId, text})
-
   web.chat.postMessage({
     text: text,
     channel: conversationId
   }).then((res) => {
     console.log('Message sent: ', res.ts)
-    console.log({res})
+    // console.log({res})
   }).catch(console.error)
 }
 
