@@ -41,19 +41,20 @@ module.exports.event = (event, context, callback) => {
     return 
   }
 
-  // console.log(event)
   // if the file upload
+  // todo: file upload does not equal image
   if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
     console.log({imageUrl})
-    console.log('Start download image')
     downloadImage(imageUrl)
       .then(recognition)
       .then(data => sendToChannel(conversationId, JSON.stringify(data, null, 2)))
+      .catch(err => console.log(err))
+    return
   }
   
   // send message
-  // sendToChannel(conversationId, text)
+  sendToChannel(conversationId, text)
 
   callback(null, {
     statusCode: 200
