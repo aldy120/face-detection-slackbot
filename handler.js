@@ -36,7 +36,7 @@ module.exports.event = (event, context, callback) => {
   console.log(body)
 
   // if the file upload
-  if (body.event.type === 'message' && body.event.subtype === 'file_share') {
+  if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
     console.log({imageUrl})
     console.log('Start download image')
@@ -66,6 +66,10 @@ module.exports.event = (event, context, callback) => {
   });
 }
 
+function isFileUpload(body) {
+  return body.event.type === 'message' && body.event.subtype === 'file_share';
+}
+
 function downloadImage(url) {
   request.get(url, {
     encoding: null,
@@ -79,6 +83,6 @@ function downloadImage(url) {
     }
 
     // this body is image buffer
-    console.log(body)
+    console.log({isBuffer: body.constructor === Buffer})
   })
 }
