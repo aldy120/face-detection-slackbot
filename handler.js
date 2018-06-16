@@ -4,14 +4,10 @@ const fs = require('fs')
 const { WebClient } = require('@slack/client')
 const token = process.env.ACCESS_TOKEN
 const web = new WebClient(token)
+const AWS = require('aws-sdk')
+const rekognition = new AWS.Rekognition();
 
-function isBot(body) {
-  return !!body.event.bot_id
-}
 
-function isChallenge(body) {
-  return body && body.type === 'url_verification'
-}
 
 module.exports.event = (event, context, callback) => {
   const body = event.body && JSON.parse(event.body)
@@ -35,36 +31,65 @@ module.exports.event = (event, context, callback) => {
 
   // console.log(body)
 
-  // if the file upload
-  if (isFileUpload(body)) {
-    const imageUrl = body.event.file.url_private
-    console.log({imageUrl})
-    console.log('Start download image')
-    downloadImage(imageUrl)
-      .then(buffer => console.log({isBuffer: buffer.constructor === Buffer}))
-  }
-  
-
   // do not response a bot
   if (isBot(body)) {
     console.log({info: 'This is a bot message which do not be replied'})
     callback(null, {
       statusCode: 200
     });
+
     return 
   }
+
+  // console.log(event)
+  // if the file upload
+  if (isFileUpload(body)) {
+    const imageUrl = body.event.file.url_private
+    console.log({imageUrl})
+    console.log('Start download image')
+    downloadImage(imageUrl)
+      .then(recognition)
+      .then(data => sendToChannel(conversationId, JSON.stringify(data, null, 2)))
+  }
+  
+  // send message
+  // sendToChannel(conversationId, text)
+
+  callback(null, {
+    statusCode: 200
+  });
+}
+
+function sendToChannel(conversationId, text) {
+  console.log({conversationId, text})
 
   web.chat.postMessage({
     text: text,
     channel: conversationId
   }).then((res) => {
     console.log('Message sent: ', res.ts)
-    console.log(res)
+    console.log({res})
   }).catch(console.error)
+}
 
-  callback(null, {
-    statusCode: 200
-  });
+function recognition(img) {
+  const params = {
+    Image: { /* required */
+      Bytes: img
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    rekognition.detectFaces(params, function(err, data) {
+      if (err) {
+        console.log({err})
+        reject(err)
+        return
+      }
+  
+      resolve(data)
+    })
+  })
 }
 
 function isFileUpload(body) {
@@ -88,4 +113,12 @@ function downloadImage(url) {
       resolve(body)
     })
   })
+}
+
+function isBot(body) {
+  return !!body.event.bot_id
+}
+
+function isChallenge(body) {
+  return body && body.type === 'url_verification'
 }
