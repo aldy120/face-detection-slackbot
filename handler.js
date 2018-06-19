@@ -8,6 +8,10 @@ const AWS = require('aws-sdk')
 const rekognition = new AWS.Rekognition();
 
 
+const processImage = require('./processImage')
+const bufferToStream = require('./bufferToStream')
+
+
 
 module.exports.event = (event, context, callback) => {
   const body = event.body && JSON.parse(event.body)
@@ -44,14 +48,27 @@ module.exports.event = (event, context, callback) => {
   // if the file upload
   // todo: file upload does not equal image
   sendToChannel(conversationId, '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。')
-  console.log(body)
+  // uploadImage(conversationId)
+  // console.log(body)
   if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
     console.log({imageUrl})
     downloadImage(imageUrl)
       .then(recognition)
-      .then(data => sendToChannel(conversationId, JSON.stringify(data, null, 2)))
+      .then(({data, img}) => {
+        sendToChannel(conversationId, JSON.stringify(data, null, 2))
+        // console.log({data: typeof data, img})
+        return {data, img}
+      }).then(processImage)
+      .then(bufferToStream)
+      .then((stream) => {
+        // uploadImage(conversationId, stream)
+        var ws = fs.createWriteStream('output.png')
+        stream.pipe(ws)
+      })
       .catch(err => console.log(err))
+    
+    
   }
   
   // send message
@@ -86,8 +103,12 @@ function recognition(img) {
         reject(err)
         return
       }
-  
-      resolve(data)
+      
+      const payload = {
+        data,
+        img
+      }
+      resolve(payload)
     })
   })
 }
@@ -121,4 +142,20 @@ function isBot(body) {
 
 function isChallenge(body) {
   return body && body.type === 'url_verification'
+}
+
+function uploadImage(conversationId, fileStream) {
+  // console.log({conversationId, fileStream})
+  // console.log(fileStream)
+  console.log(fs.createReadStream("./ma19.jpg"))
+  const filename = 'ma19.jpg'
+  return web.files.upload({
+    filename,
+    channels: conversationId,
+    // file: fs.createReadStream("./ma19.jpg"),
+    // file: fileStream,
+    // content: buf
+  }).then((res) => {
+    console.log({res})
+  }).catch(console.error)
 }
