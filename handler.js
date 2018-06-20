@@ -60,11 +60,11 @@ module.exports.event = (event, context, callback) => {
         // console.log({data: typeof data, img})
         return {data, img}
       }).then(processImage)
-      .then(bufferToStream)
-      .then((stream) => {
-        // uploadImage(conversationId, stream)
-        var ws = fs.createWriteStream('output.png')
-        stream.pipe(ws)
+      // .then(bufferToStream)
+      .then((buf) => {
+        // var ws = fs.createWriteStream('output.png')
+        // stream.pipe(ws)
+        uploadImage(conversationId, buf)
       })
       .catch(err => console.log(err))
     
@@ -77,6 +77,25 @@ module.exports.event = (event, context, callback) => {
   callback(null, {
     statusCode: 200
   });
+}
+
+function uploadImage(conversationId, fileStream) {
+  // console.log({conversationId, fileStream})
+  // console.log(fileStream)
+  // console.log(fs.createReadStream("./ma19.jpg"))
+  const filename = 'output.png'
+  return web.files.upload({
+    filename,
+    channels: conversationId,
+    // file: fs.createReadStream("./ma19.jpg"),
+    file: fileStream,
+    // content: 'hello'
+    // file: fs.createReadStream('./kp.png'),
+    // file: fs.createReadStream('./output.png'),
+    // filetype: 'png',
+  }).then((res) => {
+    console.log({res})
+  }).catch(console.error)
 }
 
 function sendToChannel(conversationId, text) {
@@ -144,18 +163,3 @@ function isChallenge(body) {
   return body && body.type === 'url_verification'
 }
 
-function uploadImage(conversationId, fileStream) {
-  // console.log({conversationId, fileStream})
-  // console.log(fileStream)
-  console.log(fs.createReadStream("./ma19.jpg"))
-  const filename = 'ma19.jpg'
-  return web.files.upload({
-    filename,
-    channels: conversationId,
-    // file: fs.createReadStream("./ma19.jpg"),
-    // file: fileStream,
-    // content: buf
-  }).then((res) => {
-    console.log({res})
-  }).catch(console.error)
-}

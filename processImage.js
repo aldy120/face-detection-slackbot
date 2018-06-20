@@ -10,6 +10,8 @@ function processImage({data, img}) {
   const ctx = canvas.getContext('2d')
 
   ctx.drawImage(image, 0, 0)
+  // 原本是 toBuffer ，並回傳 buffer
+  // const stream = canvas.createPNGStream()
   const buf = canvas.toBuffer()
   // console.log(buf)
   return buf

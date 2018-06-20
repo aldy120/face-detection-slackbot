@@ -5,3 +5,7 @@ jspm_packages
 # Serverless directories
 .serverless
 local.yml
+
+# Image
+.png
+.jpg
