@@ -12,9 +12,9 @@
   "author": "lichi <aldy120@yahoo.com.tw>",
   "license": "MIT",
   "dependencies": {
-    "canvas": "^2.0.0-alpha.12",
     "@slack/client": "^4.3.1",
     "aws-sdk": "^2.259.1",
+    "canvas": "^2.0.0-alpha.12",
     "request": "^2.87.0"
   }
 }

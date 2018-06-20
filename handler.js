@@ -7,13 +7,14 @@ const web = new WebClient(token)
 const AWS = require('aws-sdk')
 const rekognition = new AWS.Rekognition();
 
+// let send = true
+
 
 const processImage = require('./processImage')
 const bufferToStream = require('./bufferToStream')
 
-
-
 module.exports.event = (event, context, callback) => {
+  // console.log('hi')
   const body = event.body && JSON.parse(event.body)
 
   // verfied event api challnege token
@@ -32,6 +33,7 @@ module.exports.event = (event, context, callback) => {
   //process channel message
   let text = body.event.text
   const conversationId = body.event.channel
+  const introduction = '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。'
 
   // console.log(body)
 
@@ -47,9 +49,13 @@ module.exports.event = (event, context, callback) => {
 
   // if the file upload
   // todo: file upload does not equal image
-  sendToChannel(conversationId, '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。')
-  // uploadImage(conversationId)
-  // console.log(body)
+  // sendToChannel(conversationId, '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。')
+  // uploadImage(conversationId, fs.createReadStream('./kp.png'))
+  console.log(body)
+  // send && uploadImage(conversationId, fs.createReadStream('./kp.png'))
+  // send = false
+
+  // 如果判斷是是真人在上傳照片
   if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
     console.log({imageUrl})
@@ -67,12 +73,10 @@ module.exports.event = (event, context, callback) => {
         uploadImage(conversationId, buf)
       })
       .catch(err => console.log(err))
-    
-    
+  } else {
+    // send message
+    sendToChannel(conversationId, introduction)
   }
-  
-  // send message
-  // sendToChannel(conversationId, text)
 
   callback(null, {
     statusCode: 200
@@ -87,7 +91,6 @@ function uploadImage(conversationId, fileStream) {
   return web.files.upload({
     filename,
     channels: conversationId,
-    // file: fs.createReadStream("./ma19.jpg"),
     file: fileStream,
     // content: 'hello'
     // file: fs.createReadStream('./kp.png'),
@@ -156,7 +159,10 @@ function downloadImage(url) {
 }
 
 function isBot(body) {
-  return !!body.event.bot_id
+  return (
+    body.event.subtype === 'bot_message' || 
+    body.event.user === 'UB7JZ1XQ9'
+  )
 }
 
 function isChallenge(body) {

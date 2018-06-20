@@ -19,3 +19,10 @@
 
 ### PureImage
 這跟瀏覽器的 canvas api 很像
+
+## [node-canvas](https://github.com/Automattic/node-canvas/wiki/Installation---AWS-Lambda)
+看起來不用額外的東西，只要 npm 就可以裝好，所以很適合拿來跑 lambda funciton 。其實不是這樣的，他會用 gyp 幫你建立一個與作業系統相依的東西在 node_modules/canvas 裡面。這會讓你在本地裝的 serverless function 可以執行，但是放在雲端又不能執行，實在很糟糕。
+
+node-canvas 超廢，居然要開一台 ec2 來幫他建立 lib/ 跟 node_module ，再下載回去。下載回去好麻煩怕下次還要用到，所以先開個 s3 來存放。
+
+## 上傳一個圖片會發生什麼事
