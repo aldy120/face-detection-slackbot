@@ -3,20 +3,32 @@ service: recognition-slackbot
 provider:
   name: aws
   runtime: nodejs8.10
+  stage: ${opt:stage, 'dev'}
   environment:
     ACCESS_TOKEN: ${file(local.yml):slack.accessToken}
+    REPLY_FUNCTION_NAME: ${self:service}-${self:provider.stage}-event
   region: ap-northeast-1
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "rekognition:*"
       Resource: "*"
+    - Effect: "Allow"
+      Action: 
+        - "lambda:InvokeFunction"
+      Resource: "*"
   timeout: 30
 functions:
   event:
     handler: handler.event
-    events: 
-      - http:
+    # events: 
+    #   - http:
+    #       path: event
+    #       method: post
+  dispatcher: 
+    handler: handler.dispatcher
+    events:
+      - http: 
           path: event
-          method: post
+          method: post        
  

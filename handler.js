@@ -6,18 +6,14 @@ const token = process.env.ACCESS_TOKEN
 const web = new WebClient(token)
 const AWS = require('aws-sdk')
 const rekognition = new AWS.Rekognition();
-
-// let send = true
-
+const lambda = new AWS.Lambda();
 
 const processImage = require('./processImage')
 const bufferToStream = require('./bufferToStream')
 
-module.exports.event = (event, context, callback) => {
-  // console.log('hi')
+module.exports.dispatcher = (event, context, callback) => {
   const body = event.body && JSON.parse(event.body)
-
-  // verfied event api challnege token
+  // Verfied event api challnege token
   if (isChallenge(body)) {
     const response = {
       statusCode: 200,
@@ -30,6 +26,37 @@ module.exports.event = (event, context, callback) => {
     return
   }
 
+  var params = {
+    ClientContext: "dispatcher", 
+    FunctionName: process.env.REPLY_FUNCTION_NAME, 
+    InvocationType: "Event", 
+
+    Payload: eventToBuffer(event), 
+  };
+  // console.log(params)
+  lambda.invoke(params, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log({data});           // successful response
+    /*
+    data = {
+    FunctionError: "", 
+    LogResult: "", 
+    Payload: <Binary String>, 
+    StatusCode: 123
+    }
+    */
+  });
+
+  callback(null, {
+    statusCode: 200
+  });
+}
+
+
+module.exports.event = (event, context, callback) => {
+  // console.log('hi')
+  const body = event.body && JSON.parse(event.body)
+  
   //process channel message
   let text = body.event.text
   const conversationId = body.event.channel
@@ -54,6 +81,8 @@ module.exports.event = (event, context, callback) => {
   console.log(body)
   // send && uploadImage(conversationId, fs.createReadStream('./kp.png'))
   // send = false
+  
+  
 
   // 如果判斷是是真人在上傳照片
   if (isFileUpload(body)) {
@@ -70,6 +99,7 @@ module.exports.event = (event, context, callback) => {
       .then((buf) => {
         // var ws = fs.createWriteStream('output.png')
         // stream.pipe(ws)
+        console.log('before upload')
         uploadImage(conversationId, buf)
       })
       .catch(err => console.log(err))
@@ -81,6 +111,10 @@ module.exports.event = (event, context, callback) => {
   callback(null, {
     statusCode: 200
   });
+}
+
+function eventToBuffer(event) {
+  return Buffer.from(JSON.stringify(event))
 }
 
 function uploadImage(conversationId, fileStream) {
