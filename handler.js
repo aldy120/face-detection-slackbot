@@ -1,6 +1,5 @@
 'use strict';
 const request = require('request')
-const fs = require('fs')
 const { WebClient } = require('@slack/client')
 const token = process.env.ACCESS_TOKEN
 const web = new WebClient(token)
@@ -9,7 +8,6 @@ const rekognition = new AWS.Rekognition();
 const lambda = new AWS.Lambda();
 
 const processImage = require('./processImage')
-const bufferToStream = require('./bufferToStream')
 
 module.exports.dispatcher = (event, context, callback) => {
   const body = event.body && JSON.parse(event.body)
@@ -26,6 +24,7 @@ module.exports.dispatcher = (event, context, callback) => {
     return
   }
 
+  // Invoke event handler: another lambda function
   var params = {
     ClientContext: "dispatcher", 
     FunctionName: process.env.REPLY_FUNCTION_NAME, 
@@ -35,18 +34,14 @@ module.exports.dispatcher = (event, context, callback) => {
   };
   // console.log(params)
   lambda.invoke(params, function(err, data) {
-    if (err) console.log(err, err.stack); // an error occurred
-    else     console.log({data});           // successful response
-    /*
-    data = {
-    FunctionError: "", 
-    LogResult: "", 
-    Payload: <Binary String>, 
-    StatusCode: 123
+    if (err) {
+      console.log(err, err.stack); // an error occurred
+    } else {
+      console.log({data});           // successful response
     }
-    */
   });
 
+  // return 200 ASAP
   callback(null, {
     statusCode: 200
   });
@@ -54,7 +49,6 @@ module.exports.dispatcher = (event, context, callback) => {
 
 
 module.exports.event = (event, context, callback) => {
-  // console.log('hi')
   const body = event.body && JSON.parse(event.body)
   
   //process channel message
@@ -62,7 +56,6 @@ module.exports.event = (event, context, callback) => {
   const conversationId = body.event.channel
   const introduction = '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。'
 
-  // console.log(body)
 
   // do not response a bot
   if (isBot(body)) {
@@ -76,13 +69,6 @@ module.exports.event = (event, context, callback) => {
 
   // if the file upload
   // todo: file upload does not equal image
-  // sendToChannel(conversationId, '這是一個分析圖片中人物的 channel 。你可以上傳圖片試試看。')
-  // uploadImage(conversationId, fs.createReadStream('./kp.png'))
-  console.log(body)
-  // send && uploadImage(conversationId, fs.createReadStream('./kp.png'))
-  // send = false
-  
-  
 
   // 如果判斷是是真人在上傳照片
   if (isFileUpload(body)) {
@@ -92,19 +78,14 @@ module.exports.event = (event, context, callback) => {
       .then(recognition)
       .then(({data, img}) => {
         sendToChannel(conversationId, JSON.stringify(data, null, 2))
-        // console.log({data: typeof data, img})
         return {data, img}
       }).then(processImage)
-      // .then(bufferToStream)
       .then((buf) => {
-        // var ws = fs.createWriteStream('output.png')
-        // stream.pipe(ws)
         console.log('before upload')
         uploadImage(conversationId, buf)
       })
       .catch(err => console.log(err))
   } else {
-    // send message
     sendToChannel(conversationId, introduction)
   }
 
