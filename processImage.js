@@ -13,25 +13,36 @@ function processImage({data, img}) {
 
   // draw bounding boxes
   const boxes = data.FaceDetails.map(face => face.BoundingBox)
-  boxes.forEach(box => drawRectangle(box, image, ctx))
-  
+  boxes.forEach((box, i) => {
+    drawRectangle(box, image, ctx)
+    drawText(i, box, image, ctx)
+  })
 
-  // 原本是 toBuffer ，並回傳 buffer
-  // const stream = canvas.createPNGStream()
   const buf = canvas.toBuffer()
-  // console.log(buf)
   return buf
 }
 
+function drawText(text, box, image, ctx) {
+  const {left, top, width, height} = getPixelBoundingBox(box, image)
+  ctx.font = "30px Arial"
+  ctx.fillText(text.toString(), left, top);
+}
+
 function drawRectangle(box, image, ctx) {
+  const {left, top, width, height} = getPixelBoundingBox(box, image)
+  
+  ctx.rect(left, top, width, height)
+  ctx.stroke()
+}
+
+function getPixelBoundingBox(box, image) {
   const left = box.Left * image.width
   const width = box.Width * image.width
   
   const top = box.Top * image.height
   const height = box.Height * image.height
 
-  ctx.rect(left, top, width, height)
-  ctx.stroke()
+  return {left, top, width, height}
 }
 
 module.exports = processImage

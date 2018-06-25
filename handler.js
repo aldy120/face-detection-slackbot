@@ -76,7 +76,6 @@ function event(event, context, callback) {
   // 如果判斷是是真人在上傳照片
   if (isFileUpload(body)) {
     const imageUrl = body.event.file.url_private
-    console.log({imageUrl})
     downloadImage(imageUrl)
       .then(recognition)
       .then(({data, img}) => {
@@ -154,7 +153,12 @@ function recognition(img) {
 }
 
 function isFileUpload(body) {
-  return body.event.type === 'message' && body.event.subtype === 'file_share';
+  return body.event.type === 'message' && 
+    body.event.subtype === 'file_share' &&
+    (
+      body.event.file.mimetype === 'image/png' ||
+      body.event.file.mimetype === 'image/jpeg'
+    )
 }
 
 function downloadImage(url) {
