@@ -30,3 +30,6 @@ node-canvas 超廢，居然要開一台 ec2 來幫他建立 lib/ 跟 node_module
 
 ## Invoked Function Failed
 呼叫 lambda 函數，結果回應 Error: Invoked function failed 。就相當於瀏覽器收到 500 錯誤一樣，你必須到 cloudwatch 看看，才會了解到底發生了什麼事。
+
+# Note
+Read my [note](note.md).
