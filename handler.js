@@ -9,7 +9,10 @@ const lambda = new AWS.Lambda();
 
 const processImage = require('./processImage')
 
-module.exports.dispatcher = (event, context, callback) => {
+module.exports.dispatcher = dispatcher
+module.exports.event = event
+
+function dispatcher (event, context, callback) {
   const body = event.body && JSON.parse(event.body)
   // Verfied event api challnege token
   if (isChallenge(body)) {
@@ -32,7 +35,7 @@ module.exports.dispatcher = (event, context, callback) => {
 
     Payload: eventToBuffer(event), 
   };
-  // console.log(params)
+
   lambda.invoke(params, function(err, data) {
     if (err) {
       console.log(err, err.stack); // an error occurred
@@ -48,7 +51,7 @@ module.exports.dispatcher = (event, context, callback) => {
 }
 
 
-module.exports.event = (event, context, callback) => {
+function event(event, context, callback) {
   const body = event.body && JSON.parse(event.body)
   
   //process channel message

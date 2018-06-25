@@ -21,10 +21,6 @@ provider:
 functions:
   event:
     handler: handler.event
-    # events: 
-    #   - http:
-    #       path: event
-    #       method: post
   dispatcher: 
     handler: handler.dispatcher
     events:
