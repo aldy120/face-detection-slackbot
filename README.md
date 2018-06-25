@@ -17,3 +17,6 @@ Then you can run your app.
 ```
 serverless deploy
 ```
+
+# Note
+Read my [note](docs/note.md).
